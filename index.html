@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARCANE</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(-45deg, #04162d, #09184a, #06131f, #0c1c35);
+      background-size: 400% 400%;
+      animation: gradientShift 12s ease infinite;
+      color: white;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      width: 100%;
+      max-width: 360px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      margin: 8px 0 4px;
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .player-container {
+      margin-top: 20px;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .progress-container {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: white;
+      transition: width 0.2s ease;
+    }
+
+    .play-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-left: 14px solid white;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+    }
+
+    .pause-icon {
+      display: flex;
+      gap: 3px;
+    }
+
+    .pause-icon div {
+      width: 4px;
+      height: 18px;
+      background: white;
+      border-radius: 1px;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <img src="arcane img.jpg" alt="Album Cover" />
+    <h2>Ma Meilleure Ennemie</h2>
+    <p>ARCANE</p>
+
+    <div class="player-container">
+      <div class="player-row">
+        <div class="progress-container" onclick="setProgress(event)">
+          <div class="progress" id="progress"></div>
+        </div>
+        <button class="play-btn" onclick="togglePlay()">
+          <div class="icon" id="icon">
+            <div class="play-icon"></div>
+          </div>
+        </button>
+      </div>
+      <div class="time-row">
+        <span id="currentTime">0:00</span>
+        <span id="duration">0:00</span>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audio" src="Ma Meilleure Ennemie - Stromae & Pomme (Arcane) FRENCHENGLISH LYRICS.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const icon = document.getElementById("icon");
+    const progressBar = document.getElementById("progress");
+    const progressContainer = document.querySelector(".progress-container");
+    const currentTimeDisplay = document.getElementById("currentTime");
+    const durationDisplay = document.getElementById("duration");
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+        showPauseIcon();
+      } else {
+        audio.pause();
+        showPlayIcon();
+      }
+    }
+
+    function showPlayIcon() {
+      icon.innerHTML = `<div class="play-icon"></div>`;
+    }
+
+    function showPauseIcon() {
+      icon.innerHTML = `
+        <div class="pause-icon">
+          <div></div>
+          <div></div>
+        </div>`;
+    }
+
+    audio.addEventListener("timeupdate", updateProgress);
+    audio.addEventListener("loadedmetadata", updateProgress);
+    audio.addEventListener("ended", showPlayIcon);
+
+    function updateProgress() {
+      const percent = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = percent + "%";
+      currentTimeDisplay.textContent = formatTime(audio.currentTime);
+      durationDisplay.textContent = formatTime(audio.duration);
+    }
+
+    function setProgress(e) {
+      const width = progressContainer.clientWidth;
+      const clickX = e.offsetX;
+      const duration = audio.duration;
+      audio.currentTime = (clickX / width) * duration;
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+      return `${mins}:${secs}`;
+    }
+
+    // Try autoplay after load
+    window.addEventListener("DOMContentLoaded", () => {
+      audio.play().then(() => {
+        showPauseIcon();
+      }).catch((err) => {
+        console.log("Autoplay blocked:", err);
+      });
+    });
+  </script>
+
+</body>
+</html>
